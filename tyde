@@ -1,208 +1,245 @@
-local UIS = game:GetService("UserInputService")
+local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
-local CoreGui = game:GetService("CoreGui")
 local RunService = game:GetService("RunService")
+local CoreGui = game:GetService("CoreGui")
 
 local Library = {}
 
-local function CreateElement(class, props)
-	local inst = Instance.new(class)
-	for i, v in pairs(props) do
-		inst[i] = v
-	end
-	return inst
-end
+function Library:Create(Config)
+    local Main = {
+        Title = Config.Title or "Library",
+        SubTitle = Config.SubTitle or "v1.0.0",
+        LoaderEnabled = Config.Loader or false
+    }
 
-local function MakeDraggable(obj, dragPart)
-	local dragging, dragInput, dragStart, startPos
-	dragPart.InputBegan:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 then
-			dragging = true
-			dragStart = input.Position
-			startPos = obj.Position
-		end
-	end)
-	dragPart.InputEnded:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 then
-			dragging = false
-		end
-	end)
-	UIS.InputChanged:Connect(function(input)
-		if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-			local delta = input.Position - dragStart
-			obj.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-		end
-	end)
-end
+    local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Name = "ModernUI_" .. math.random(100, 999)
+    ScreenGui.Parent = CoreGui
+    ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
-function Library:Create(config)
-	local MainGui = CreateElement("ScreenGui", {Parent = CoreGui, Name = "ModernLib", ResetOnSpawn = false})
-	
-	local LoaderFrame = CreateElement("Frame", {
-		Size = UDim2.new(1, 0, 1, 0),
-		BackgroundColor3 = Color3.fromRGB(15, 15, 15),
-		Parent = MainGui,
-		ZIndex = 10
-	})
-	
-	local LeftGate = CreateElement("Frame", {Size = UDim2.new(0.5, 0, 1, 0), BackgroundColor3 = Color3.fromRGB(15, 15, 15), Parent = LoaderFrame})
-	local RightGate = CreateElement("Frame", {Position = UDim2.new(0.5, 0, 0, 0), Size = UDim2.new(0.5, 0, 1, 0), BackgroundColor3 = Color3.fromRGB(15, 15, 15), Parent = LoaderFrame})
-	
-	local LoadLabel = CreateElement("TextLabel", {
-		Position = UDim2.new(0.5, -100, 0.5, -20),
-		Size = UDim2.new(0, 200, 0, 40),
-		BackgroundTransparency = 1,
-		TextColor3 = Color3.fromRGB(255, 255, 255),
-		Text = "Initializing...",
-		Font = Enum.Font.GothamMedium,
-		TextSize = 18,
-		Parent = LoaderFrame,
-		ZIndex = 11
-	})
+    local Container = Instance.new("Frame")
+    Container.Name = "Main"
+    Container.Size = UDim2.new(0, 550, 0, 350)
+    Container.Position = UDim2.new(0.5, -275, 0.5, -175)
+    Container.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    Container.BorderSizePixel = 0
+    Container.ClipsDescendants = true
+    Container.Visible = not Main.LoaderEnabled
+    Container.Parent = ScreenGui
 
-	local MainFrame = CreateElement("Frame", {
-		Size = UDim2.new(0, 550, 0, 350),
-		Position = UDim2.new(0.5, -275, 0.5, -175),
-		BackgroundColor3 = Color3.fromRGB(20, 20, 20),
-		ClipsDescendants = true,
-		Visible = false,
-		Parent = MainGui
-	})
-	CreateElement("UICorner", {CornerRadius = UDim.new(0, 8), Parent = MainFrame})
-	
-	MakeDraggable(MainFrame, MainFrame)
+    local UICorner = Instance.new("UICorner")
+    UICorner.CornerRadius = UDim.new(0, 8)
+    UICorner.Parent = Container
 
-	local Sidebar = CreateElement("Frame", {Size = UDim2.new(0, 150, 1, 0), BackgroundColor3 = Color3.fromRGB(25, 25, 25), Parent = MainFrame})
-	local Container = CreateElement("Frame", {Position = UDim2.new(0, 160, 0, 40), Size = UDim2.new(1, -170, 1, -50), BackgroundTransparency = 1, Parent = MainFrame})
-	
-	local Title = CreateElement("TextLabel", {
-		Position = UDim2.new(0, 10, 0, 10),
-		Size = UDim2.new(0, 130, 0, 20),
-		Text = config.Title or "Library",
-		TextColor3 = Color3.fromRGB(255, 255, 255),
-		TextXAlignment = Enum.TextXAlignment.Left,
-		Font = Enum.Font.GothamBold,
-		TextSize = 14,
-		BackgroundTransparency = 1,
-		Parent = Sidebar
-	})
+    local TopBar = Instance.new("Frame")
+    TopBar.Name = "TopBar"
+    TopBar.Size = UDim2.new(1, 0, 0, 40)
+    TopBar.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    TopBar.BorderSizePixel = 0
+    TopBar.Parent = Container
 
-	local Loader = {}
-	function Loader:Start()
-		LoaderFrame.Visible = true
-	end
-	
-	function Loader:SetText(val)
-		LoadLabel.Text = val
-	end
-	
-	function Loader:End()
-		TweenService:Create(LoadLabel, TweenInfo.new(0.5), {TextTransparency = 1}):Play()
-		wait(0.5)
-		TweenService:Create(LeftGate, TweenInfo.new(0.8, Enum.EasingStyle.Quart), {Position = UDim2.new(-0.5, 0, 0, 0)}):Play()
-		TweenService:Create(RightGate, TweenInfo.new(0.8, Enum.EasingStyle.Quart), {Position = UDim2.new(1, 0, 0, 0)}):Play()
-		wait(0.8)
-		LoaderFrame.Visible = false
-		MainFrame.Visible = true
-	end
+    local TitleLabel = Instance.new("TextLabel")
+    TitleLabel.Text = Main.Title .. " | " .. Main.SubTitle
+    TitleLabel.Size = UDim2.new(1, -100, 1, 0)
+    TitleLabel.Position = UDim2.new(0, 15, 0, 0)
+    TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    TitleLabel.Font = Enum.Font.GothamMedium
+    TitleLabel.TextSize = 14
+    TitleLabel.BackgroundTransparency = 1
+    TitleLabel.Parent = TopBar
 
-	local Window = {}
-	function Window:Tab(name)
-		local TabBtn = CreateElement("TextButton", {
-			Size = UDim2.new(1, -20, 0, 30),
-			BackgroundColor3 = Color3.fromRGB(35, 35, 35),
-			Text = name,
-			TextColor3 = Color3.fromRGB(200, 200, 200),
-			Font = Enum.Font.Gotham,
-			TextSize = 12,
-			Parent = Sidebar,
-			Position = UDim2.new(0, 10, 0, 50 + (#Sidebar:GetChildren() * 35))
-		})
-		CreateElement("UICorner", {CornerRadius = UDim.new(0, 4), Parent = TabBtn})
-		
-		local TabContent = CreateElement("ScrollingFrame", {
-			Size = UDim2.new(1, 0, 1, 0),
-			BackgroundTransparency = 1,
-			Visible = false,
-			ScrollBarThickness = 2,
-			Parent = Container
-		})
-		CreateElement("UIListLayout", {Padding = UDim.new(0, 10), Parent = TabContent})
+    local Sidebar = Instance.new("Frame")
+    Sidebar.Name = "Sidebar"
+    Sidebar.Position = UDim2.new(0, 0, 0, 40)
+    Sidebar.Size = UDim2.new(0, 140, 1, -40)
+    Sidebar.BackgroundColor3 = Color3.fromRGB(28, 28, 28)
+    Sidebar.BorderSizePixel = 0
+    Sidebar.Parent = Container
 
-		TabBtn.MouseButton1Click:Connect(function()
-			for _, v in pairs(Container:GetChildren()) do v.Visible = false end
-			TabContent.Visible = true
-		end)
+    local ContentArea = Instance.new("Frame")
+    ContentArea.Name = "Content"
+    ContentArea.Position = UDim2.new(0, 140, 0, 40)
+    ContentArea.Size = UDim2.new(1, -140, 1, -40)
+    ContentArea.BackgroundTransparency = 1
+    ContentArea.Parent = Container
 
-		local Tab = {}
-		function Tab:Section(secName)
-			local SecFrame = CreateElement("Frame", {Size = UDim2.new(1, -10, 0, 20), BackgroundTransparency = 1, Parent = TabContent})
-			local SecLabel = CreateElement("TextLabel", {
-				Text = secName,
-				Size = UDim2.new(1, 0, 0, 15),
-				TextColor3 = Color3.fromRGB(150, 150, 150),
-				Font = Enum.Font.GothamBold,
-				TextSize = 11,
-				TextXAlignment = Enum.TextXAlignment.Left,
-				BackgroundTransparency = 1,
-				Parent = SecFrame
-			})
-			local Div = CreateElement("Frame", {
-				Position = UDim2.new(0, 0, 1, 2),
-				Size = UDim2.new(1, 0, 0, 1),
-				BackgroundColor3 = Color3.fromRGB(50, 50, 50),
-				BorderSizePixel = 0,
-				Parent = SecFrame
-			})
-			
-			local Section = {}
-			function Section:Button(txt, cb)
-				local Btn = CreateElement("TextButton", {
-					Size = UDim2.new(1, -10, 0, 35),
-					BackgroundColor3 = Color3.fromRGB(30, 30, 30),
-					Text = "  " .. txt,
-					TextColor3 = Color3.fromRGB(255, 255, 255),
-					Font = Enum.Font.Gotham,
-					TextSize = 13,
-					TextXAlignment = Enum.TextXAlignment.Left,
-					Parent = TabContent
-				})
-				CreateElement("UICorner", {CornerRadius = UDim.new(0, 4), Parent = Btn})
-				Btn.MouseButton1Click:Connect(cb)
-			end
-			
-			function Section:Toggle(txt, cb)
-				local state = false
-				local Tgl = CreateElement("TextButton", {
-					Size = UDim2.new(1, -10, 0, 35),
-					BackgroundColor3 = Color3.fromRGB(30, 30, 30),
-					Text = "  " .. txt,
-					TextColor3 = Color3.fromRGB(255, 255, 255),
-					Font = Enum.Font.Gotham,
-					TextSize = 13,
-					TextXAlignment = Enum.TextXAlignment.Left,
-					Parent = TabContent
-				})
-				local Indicator = CreateElement("Frame", {
-					Position = UDim2.new(1, -30, 0.5, -8),
-					Size = UDim2.new(0, 16, 0, 16),
-					BackgroundColor3 = Color3.fromRGB(50, 50, 50),
-					Parent = Tgl
-				})
-				CreateElement("UICorner", {CornerRadius = UDim.new(1, 0), Parent = Indicator})
-				Tgl.MouseButton1Click:Connect(function()
-					state = not state
-					TweenService:Create(Indicator, TweenInfo.new(0.3), {BackgroundColor3 = state and Color3.fromRGB(0, 255, 120) or Color3.fromRGB(50, 50, 50)}):Play()
-					cb(state)
-				end)
-			end
-			
-			return Section
-		end
-		return Tab
-	end
-	
-	if config.Loader then return Window, Loader else return Window end
+    local function MakeDraggable(frame, parent)
+        local dragging, dragInput, dragStart, startPos
+        frame.InputBegan:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                dragging = true
+                dragStart = input.Position
+                startPos = parent.Position
+            end
+        end)
+        frame.InputEnded:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                dragging = false
+            end
+        end)
+        UserInputService.InputChanged:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseMovement and dragging then
+                local delta = input.Position - dragStart
+                parent.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+            end
+        end)
+    end
+    MakeDraggable(TopBar, Container)
+
+    local Loader = {}
+    local LFrameLeft, LFrameRight, LText
+    
+    if Main.LoaderEnabled then
+        LFrameLeft = Instance.new("Frame")
+        LFrameLeft.Size = UDim2.new(0.5, 0, 1, 0)
+        LFrameLeft.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+        LFrameLeft.BorderSizePixel = 0
+        LFrameLeft.ZIndex = 10
+        LFrameLeft.Parent = ScreenGui
+
+        LFrameRight = Instance.new("Frame")
+        LFrameRight.Size = UDim2.new(0.5, 0, 1, 0)
+        LFrameRight.Position = UDim2.new(0.5, 0, 0, 0)
+        LFrameRight.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+        LFrameRight.BorderSizePixel = 0
+        LFrameRight.ZIndex = 10
+        LFrameRight.Parent = ScreenGui
+
+        LText = Instance.new("TextLabel")
+        LText.Size = UDim2.new(1, 0, 0, 50)
+        LText.Position = UDim2.new(0, 0, 0.5, -25)
+        LText.BackgroundTransparency = 1
+        LText.TextColor3 = Color3.fromRGB(255, 255, 255)
+        LText.Font = Enum.Font.GothamBold
+        LText.TextSize = 24
+        LText.Text = "INITIALIZING..."
+        LText.ZIndex = 11
+        LText.Parent = ScreenGui
+    end
+
+    function Loader:Start()
+        LFrameLeft.Visible = true
+        LFrameRight.Visible = true
+    end
+
+    function Loader:SetText(val)
+        LText.Text = val:upper()
+    end
+
+    function Loader:End()
+        TweenService:Create(LText, TweenInfo.new(0.5), {TextTransparency = 1}):Play()
+        task.wait(0.5)
+        Container.Visible = true
+        TweenService:Create(LFrameLeft, TweenInfo.new(0.8, Enum.EasingStyle.Quart, Enum.EasingDirection.InOut), {Position = UDim2.new(-0.5, 0, 0, 0)}):Play()
+        TweenService:Create(LFrameRight, TweenInfo.new(0.8, Enum.EasingStyle.Quart, Enum.EasingDirection.InOut), {Position = UDim2.new(1, 0, 0, 0)}):Play()
+        task.wait(0.8)
+        LFrameLeft:Destroy()
+        LFrameRight:Destroy()
+        LText:Destroy()
+    end
+
+    local Tabs = {}
+    function Main:Tab(Name)
+        local TabBtn = Instance.new("TextButton")
+        TabBtn.Size = UDim2.new(1, -20, 0, 30)
+        TabBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+        TabBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
+        TabBtn.Font = Enum.Font.Gotham
+        TabBtn.TextSize = 13
+        TabBtn.Text = Name
+        TabBtn.Parent = Sidebar
+        Instance.new("UICorner", TabBtn).CornerRadius = UDim.new(0, 4)
+
+        local Page = Instance.new("ScrollingFrame")
+        Page.Size = UDim2.new(1, -20, 1, -20)
+        Page.Position = UDim2.new(0, 10, 0, 10)
+        Page.BackgroundTransparency = 1
+        Page.Visible = false
+        Page.ScrollBarThickness = 2
+        Page.Parent = ContentArea
+
+        local Layout = Instance.new("UIListLayout")
+        Layout.Padding = UDim.new(0, 10)
+        Layout.Parent = Page
+
+        TabBtn.MouseButton1Click:Connect(function()
+            for _, p in pairs(ContentArea:GetChildren()) do p.Visible = false end
+            Page.Visible = true
+        end)
+
+        local SectionHandler = {}
+        function SectionHandler:Section(SecName)
+            local SecFrame = Instance.new("Frame")
+            SecFrame.Size = UDim2.new(1, 0, 0, 30)
+            SecFrame.BackgroundTransparency = 1
+            SecFrame.Parent = Page
+
+            local SecTitle = Instance.new("TextLabel")
+            SecTitle.Text = SecName:upper()
+            SecTitle.Size = UDim2.new(1, 0, 0, 20)
+            SecTitle.TextColor3 = Color3.fromRGB(150, 150, 150)
+            SecTitle.Font = Enum.Font.GothamBold
+            SecTitle.TextSize = 11
+            SecTitle.TextXAlignment = Enum.TextXAlignment.Left
+            SecTitle.BackgroundTransparency = 1
+            SecTitle.Parent = SecFrame
+
+            local Div = Instance.new("Frame")
+            Div.Size = UDim2.new(1, 0, 0, 1)
+            Div.Position = UDim2.new(0, 0, 1, -2)
+            Div.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+            Div.BorderSizePixel = 0
+            Div.Parent = SecFrame
+
+            local ElementHandler = {}
+
+            function ElementHandler:Button(txt, cb)
+                local B = Instance.new("TextButton")
+                B.Size = UDim2.new(1, 0, 0, 35)
+                B.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+                B.Text = txt
+                B.TextColor3 = Color3.fromRGB(255, 255, 255)
+                B.Font = Enum.Font.Gotham
+                B.TextSize = 13
+                B.Parent = Page
+                Instance.new("UICorner", B)
+                B.MouseButton1Click:Connect(cb)
+            end
+
+            function ElementHandler:Toggle(txt, cb)
+                local T = Instance.new("TextButton")
+                T.Size = UDim2.new(1, 0, 0, 35)
+                T.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+                T.Text = "  " .. txt
+                T.TextColor3 = Color3.fromRGB(255, 255, 255)
+                T.Font = Enum.Font.Gotham
+                T.TextSize = 13
+                T.TextXAlignment = Enum.TextXAlignment.Left
+                T.Parent = Page
+                Instance.new("UICorner", T)
+                
+                local State = false
+                local Indicator = Instance.new("Frame")
+                Indicator.Size = UDim2.new(0, 20, 0, 20)
+                Indicator.Position = UDim2.new(1, -30, 0.5, -10)
+                Indicator.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+                Indicator.Parent = T
+                Instance.new("UICorner", Indicator).CornerRadius = UDim.new(1, 0)
+
+                T.MouseButton1Click:Connect(function()
+                    State = not State
+                    TweenService:Create(Indicator, TweenInfo.new(0.3), {BackgroundColor3 = State and Color3.fromRGB(0, 255, 150) or Color3.fromRGB(50, 50, 50)}):Play()
+                    cb(State)
+                end)
+            end
+
+            return ElementHandler
+        end
+        return SectionHandler
+    end
+
+    return Main, Loader
 end
 
 return Library
