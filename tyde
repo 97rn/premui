@@ -146,32 +146,7 @@ function Library:New(config)
 		})
 	})
 
-	Create("TextLabel", {
-		Text = config.Title or "Dcus Hub",
-		Font = Enum.Font.GothamBold,
-		TextSize = 18,
-		TextColor3 = THEME.Text,
-		TextXAlignment = Enum.TextXAlignment.Left,
-		BackgroundTransparency = 1,
-		Position = UDim2.fromOffset(18, 8),
-		Size = UDim2.new(0, 200, 0, 30),
-		ZIndex = 12,
-		Parent = self.Top
-	})
-
-	Create("TextLabel", {
-		Text = config.Footer or "Premium Interface • v2.3",
-		Font = Enum.Font.GothamMedium,
-		TextSize = 11,
-		TextColor3 = THEME.TextMuted,
-		TextXAlignment = Enum.TextXAlignment.Left,
-		BackgroundTransparency = 1,
-		Size = UDim2.new(0, 200, 0, 20),
-		Position = UDim2.fromOffset(18, 28),
-		ZIndex = 12,
-		Parent = self.Top
-	})
-
+	
 	local function createControlButton(text, posX, callback, color)
 		local btn = Create("TextButton", {
 			Text = text,
@@ -244,8 +219,8 @@ function Library:New(config)
 	self.TabBar = Create("ScrollingFrame", {
 		Name = "TabBar",
 		BackgroundTransparency = 1,
-		Size = UDim2.new(1, -240, 0, 28),
-		Position = UDim2.fromOffset(210, 18),
+		Size = UDim2.new(1, -120, 0, 28),
+		Position = UDim2.fromOffset(18, 10),
 		ZIndex = 20,
 		Parent = self.Top,
 		ScrollBarThickness = 0,
@@ -1035,6 +1010,8 @@ function Library:New(config)
 
 		return Tab
 	end
+
+	self:NewTab(config.Title or "Dcus Hub")
 
 	return self
 end
