@@ -2,22 +2,13 @@ local Library = {}
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 
 local function GetContainer()
-	local success, result = pcall(function()
-		return gethui()
-	end)
-	if success and result then
-		return result
-	end
-	success, result = pcall(function()
-		return game:GetService("CoreGui")
-	end)
-	if success and result then
-		return result
-	end
+	local success, result = pcall(function() return gethui() end)
+	if success and result then return result end
+	success, result = pcall(function() return game:GetService("CoreGui") end)
+	if success and result then return result end
 	return Players.LocalPlayer:WaitForChild("PlayerGui")
 end
 
@@ -74,11 +65,30 @@ function Library:Create(config)
 	ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 	ScreenGui.Parent = GetContainer()
 
+	local OpenBtn = Instance.new("ImageButton")
+	OpenBtn.Name = "OpenButton"
+	OpenBtn.Size = UDim2.new(0, 40, 0, 40)
+	OpenBtn.Position = UDim2.new(0, 0, 0.5, -20)
+	OpenBtn.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+	OpenBtn.Visible = false
+	OpenBtn.Parent = ScreenGui
+
+	local OpenCorner = Instance.new("UICorner")
+	OpenCorner.CornerRadius = UDim.new(0, 8)
+	OpenCorner.Parent = OpenBtn
+
+	local OpenIcon = Instance.new("ImageLabel")
+	OpenIcon.Size = UDim2.new(0, 20, 0, 20)
+	OpenIcon.Position = UDim2.new(0.5, -10, 0.5, -10)
+	OpenIcon.BackgroundTransparency = 1
+	OpenIcon.Image = "rbxassetid://6031280882"
+	OpenIcon.Parent = OpenBtn
+
 	local MainFrame = Instance.new("Frame")
 	MainFrame.Name = "MainFrame"
 	MainFrame.Size = UDim2.new(0, 600, 0, 400)
 	MainFrame.Position = UDim2.new(0.5, -300, 0.5, -200)
-	MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+	MainFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
 	MainFrame.BorderSizePixel = 0
 	MainFrame.ClipsDescendants = true
 	MainFrame.Visible = false
@@ -91,7 +101,7 @@ function Library:Create(config)
 	local TopBar = Instance.new("Frame")
 	TopBar.Name = "TopBar"
 	TopBar.Size = UDim2.new(1, 0, 0, 40)
-	TopBar.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+	TopBar.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
 	TopBar.BorderSizePixel = 0
 	TopBar.Parent = MainFrame
 
@@ -101,7 +111,7 @@ function Library:Create(config)
 	TitleLabel.Size = UDim2.new(0.5, 0, 1, 0)
 	TitleLabel.Position = UDim2.new(0, 15, 0, 0)
 	TitleLabel.BackgroundTransparency = 1
-	TitleLabel.Text = Title .. " <font color='rgb(150,150,150)'>" .. SubTitle .. "</font> <font color='rgb(100,100,100)'>v" .. Version .. "</font>"
+	TitleLabel.Text = Title .. " <font color='rgb(100,100,100)'>" .. SubTitle .. "</font> <font color='rgb(70,70,70)'>v" .. Version .. "</font>"
 	TitleLabel.RichText = true
 	TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 	TitleLabel.TextSize = 16
@@ -137,7 +147,7 @@ function Library:Create(config)
 
 	local SideBar = Instance.new("Frame")
 	SideBar.Size = UDim2.new(0, 150, 1, 0)
-	SideBar.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
+	SideBar.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 	SideBar.BorderSizePixel = 0
 	SideBar.Parent = ContentContainer
 
@@ -158,21 +168,24 @@ function Library:Create(config)
 	PagesContainer.BackgroundTransparency = 1
 	PagesContainer.Parent = ContentContainer
 
-	local minimized = false
 	MinBtn.MouseButton1Click:Connect(function()
-		minimized = not minimized
-		if minimized then
-			Tween(MainFrame, {Size = UDim2.new(0, 600, 0, 40)})
-			ContentContainer.Visible = false
-		else
-			Tween(MainFrame, {Size = UDim2.new(0, 600, 0, 400)})
-			task.wait(0.3)
-			ContentContainer.Visible = true
-		end
+		local t = Tween(MainFrame, {Size = UDim2.new(0, 0, 0, 0)}, 0.3)
+		t.Completed:Wait()
+		MainFrame.Visible = false
+		OpenBtn.Visible = true
+		Tween(OpenBtn, {Position = UDim2.new(0, 10, 0.5, -20)}, 0.3)
+	end)
+
+	OpenBtn.MouseButton1Click:Connect(function()
+		local t = Tween(OpenBtn, {Position = UDim2.new(0, -40, 0.5, -20)}, 0.2)
+		t.Completed:Wait()
+		OpenBtn.Visible = false
+		MainFrame.Visible = true
+		Tween(MainFrame, {Size = UDim2.new(0, 600, 0, 400)}, 0.3)
 	end)
 
 	CloseBtn.MouseButton1Click:Connect(function()
-		local t = Tween(MainFrame, {Size = UDim2.new(0, 600, 0, 0)})
+		local t = Tween(MainFrame, {Size = UDim2.new(0, 0, 0, 0)}, 0.3)
 		t.Completed:Wait()
 		ScreenGui:Destroy()
 	end)
@@ -180,19 +193,35 @@ function Library:Create(config)
 	local Window = {}
 	local firstTab = true
 
-	function Window:Tab(tabName)
+	function Window:Tab(tabName, iconId)
 		local TabBtn = Instance.new("TextButton")
 		TabBtn.Size = UDim2.new(1, 0, 0, 30)
-		TabBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-		TabBtn.Text = tabName
-		TabBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
-		TabBtn.Font = Enum.Font.GothamSemibold
-		TabBtn.TextSize = 14
+		TabBtn.BackgroundTransparency = 1
+		TabBtn.Text = ""
 		TabBtn.Parent = SideBar
 
 		local TabCorner = Instance.new("UICorner")
 		TabCorner.CornerRadius = UDim.new(0, 6)
 		TabCorner.Parent = TabBtn
+
+		local TabIcon = Instance.new("ImageLabel")
+		TabIcon.Size = UDim2.new(0, 16, 0, 16)
+		TabIcon.Position = UDim2.new(0, 8, 0.5, -8)
+		TabIcon.BackgroundTransparency = 1
+		TabIcon.Image = iconId or ""
+		TabIcon.ImageColor3 = Color3.fromRGB(150, 150, 150)
+		TabIcon.Parent = TabBtn
+
+		local TabText = Instance.new("TextLabel")
+		TabText.Size = UDim2.new(1, -34, 1, 0)
+		TabText.Position = UDim2.new(0, 30, 0, 0)
+		TabText.BackgroundTransparency = 1
+		TabText.Text = tabName
+		TabText.TextColor3 = Color3.fromRGB(150, 150, 150)
+		TabText.Font = Enum.Font.GothamSemibold
+		TabText.TextSize = 13
+		TabText.TextXAlignment = Enum.TextXAlignment.Left
+		TabText.Parent = TabBtn
 
 		local Page = Instance.new("ScrollingFrame")
 		Page.Size = UDim2.new(1, 0, 1, 0)
@@ -214,26 +243,27 @@ function Library:Create(config)
 		PagePadding.Parent = Page
 
 		if firstTab then
-			TabBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-			TabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+			TabBtn.BackgroundTransparency = 0.9
+			TabIcon.ImageColor3 = Color3.fromRGB(255, 255, 255)
+			TabText.TextColor3 = Color3.fromRGB(255, 255, 255)
 			firstTab = false
 		end
 
 		TabBtn.MouseButton1Click:Connect(function()
 			for _, child in ipairs(PagesContainer:GetChildren()) do
-				if child:IsA("ScrollingFrame") then
-					child.Visible = false
-				end
+				if child:IsA("ScrollingFrame") then child.Visible = false end
 			end
 			for _, child in ipairs(SideBar:GetChildren()) do
 				if child:IsA("TextButton") then
-					Tween(child, {BackgroundColor3 = Color3.fromRGB(30, 30, 30)})
-					Tween(child, {TextColor3 = Color3.fromRGB(200, 200, 200)})
+					Tween(child, {BackgroundTransparency = 1})
+					Tween(child.TextLabel, {TextColor3 = Color3.fromRGB(150, 150, 150)})
+					Tween(child.ImageLabel, {ImageColor3 = Color3.fromRGB(150, 150, 150)})
 				end
 			end
 			Page.Visible = true
-			Tween(TabBtn, {BackgroundColor3 = Color3.fromRGB(45, 45, 45)})
-			Tween(TabBtn, {TextColor3 = Color3.fromRGB(255, 255, 255)})
+			Tween(TabBtn, {BackgroundTransparency = 0.9})
+			Tween(TabText, {TextColor3 = Color3.fromRGB(255, 255, 255)})
+			Tween(TabIcon, {ImageColor3 = Color3.fromRGB(255, 255, 255)})
 		end)
 
 		local TabElements = {}
@@ -261,7 +291,7 @@ function Library:Create(config)
 
 			local Divider = Instance.new("Frame")
 			Divider.Size = UDim2.new(1, 0, 0, 1)
-			Divider.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+			Divider.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
 			Divider.BorderSizePixel = 0
 			Divider.Parent = SectionContainer
 
@@ -290,7 +320,7 @@ function Library:Create(config)
 			function Elements:Button(name, callback)
 				local Btn = Instance.new("TextButton")
 				Btn.Size = UDim2.new(1, 0, 0, 35)
-				Btn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+				Btn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 				Btn.Text = name
 				Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
 				Btn.Font = Enum.Font.Gotham
@@ -302,9 +332,9 @@ function Library:Create(config)
 				BtnCorner.Parent = Btn
 
 				Btn.MouseButton1Click:Connect(function()
-					local t = Tween(Btn, {BackgroundColor3 = Color3.fromRGB(50, 50, 50)}, 0.1)
+					local t = Tween(Btn, {BackgroundColor3 = Color3.fromRGB(40, 40, 40)}, 0.1)
 					t.Completed:Wait()
-					Tween(Btn, {BackgroundColor3 = Color3.fromRGB(30, 30, 30)}, 0.1)
+					Tween(Btn, {BackgroundColor3 = Color3.fromRGB(20, 20, 20)}, 0.1)
 					callback()
 				end)
 				UpdateSectionSize()
@@ -314,7 +344,7 @@ function Library:Create(config)
 				local state = default or false
 				local TglFrame = Instance.new("TextButton")
 				TglFrame.Size = UDim2.new(1, 0, 0, 35)
-				TglFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+				TglFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 				TglFrame.Text = ""
 				TglFrame.Parent = SectionContainer
 
@@ -336,7 +366,7 @@ function Library:Create(config)
 				local Indicator = Instance.new("Frame")
 				Indicator.Size = UDim2.new(0, 20, 0, 20)
 				Indicator.Position = UDim2.new(1, -30, 0.5, -10)
-				Indicator.BackgroundColor3 = state and Color3.fromRGB(80, 200, 80) or Color3.fromRGB(60, 60, 60)
+				Indicator.BackgroundColor3 = state and Color3.fromRGB(80, 200, 80) or Color3.fromRGB(40, 40, 40)
 				Indicator.Parent = TglFrame
 
 				local IndCorner = Instance.new("UICorner")
@@ -345,7 +375,7 @@ function Library:Create(config)
 
 				TglFrame.MouseButton1Click:Connect(function()
 					state = not state
-					Tween(Indicator, {BackgroundColor3 = state and Color3.fromRGB(80, 200, 80) or Color3.fromRGB(60, 60, 60)}, 0.2)
+					Tween(Indicator, {BackgroundColor3 = state and Color3.fromRGB(80, 200, 80) or Color3.fromRGB(40, 40, 40)}, 0.2)
 					callback(state)
 				end)
 				UpdateSectionSize()
@@ -356,7 +386,7 @@ function Library:Create(config)
 				Para.Size = UDim2.new(1, 0, 0, 0)
 				Para.BackgroundTransparency = 1
 				Para.Text = text
-				Para.TextColor3 = Color3.fromRGB(180, 180, 180)
+				Para.TextColor3 = Color3.fromRGB(150, 150, 150)
 				Para.Font = Enum.Font.Gotham
 				Para.TextSize = 13
 				Para.TextWrapped = true
@@ -370,7 +400,7 @@ function Library:Create(config)
 			function Elements:Slider(name, min, max, default, callback)
 				local SldFrame = Instance.new("Frame")
 				SldFrame.Size = UDim2.new(1, 0, 0, 50)
-				SldFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+				SldFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 				SldFrame.Parent = SectionContainer
 
 				local SldCorner = Instance.new("UICorner")
@@ -402,8 +432,9 @@ function Library:Create(config)
 				local BarBg = Instance.new("TextButton")
 				BarBg.Size = UDim2.new(1, -20, 0, 6)
 				BarBg.Position = UDim2.new(0, 10, 0, 32)
-				BarBg.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+				BarBg.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
 				BarBg.Text = ""
+				BarBg.AutoButtonColor = false
 				BarBg.Parent = SldFrame
 
 				local BarBgCorner = Instance.new("UICorner")
@@ -413,7 +444,7 @@ function Library:Create(config)
 				local BarFill = Instance.new("Frame")
 				local fillPercent = (default - min) / (max - min)
 				BarFill.Size = UDim2.new(fillPercent, 0, 1, 0)
-				BarFill.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
+				BarFill.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 				BarFill.Parent = BarBg
 
 				local BarFillCorner = Instance.new("UICorner")
@@ -455,7 +486,7 @@ function Library:Create(config)
 			function Elements:Input(name, callback)
 				local InpFrame = Instance.new("Frame")
 				InpFrame.Size = UDim2.new(1, 0, 0, 35)
-				InpFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+				InpFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 				InpFrame.Parent = SectionContainer
 
 				local InpCorner = Instance.new("UICorner")
@@ -476,7 +507,7 @@ function Library:Create(config)
 				local TextBox = Instance.new("TextBox")
 				TextBox.Size = UDim2.new(0.4, 0, 0.7, 0)
 				TextBox.Position = UDim2.new(0.6, -10, 0.15, 0)
-				TextBox.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+				TextBox.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
 				TextBox.Text = ""
 				TextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
 				TextBox.Font = Enum.Font.Gotham
@@ -497,7 +528,7 @@ function Library:Create(config)
 				local dropHeight = 35
 				local DropFrame = Instance.new("Frame")
 				DropFrame.Size = UDim2.new(1, 0, 0, dropHeight)
-				DropFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+				DropFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 				DropFrame.ClipsDescendants = true
 				DropFrame.Parent = SectionContainer
 
@@ -543,7 +574,7 @@ function Library:Create(config)
 				for _, opt in ipairs(options) do
 					local OptBtn = Instance.new("TextButton")
 					OptBtn.Size = UDim2.new(1, 0, 0, 30)
-					OptBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+					OptBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 					OptBtn.Text = opt
 					OptBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
 					OptBtn.Font = Enum.Font.Gotham
@@ -582,14 +613,14 @@ function Library:Create(config)
 		local LeftFrame = Instance.new("Frame")
 		LeftFrame.Size = UDim2.new(0.5, 0, 1, 0)
 		LeftFrame.Position = UDim2.new(0, 0, 0, 0)
-		LeftFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+		LeftFrame.BackgroundColor3 = Color3.fromRGB(8, 8, 8)
 		LeftFrame.BorderSizePixel = 0
 		LeftFrame.Parent = LoaderContainer
 
 		local RightFrame = Instance.new("Frame")
 		RightFrame.Size = UDim2.new(0.5, 0, 1, 0)
 		RightFrame.Position = UDim2.new(0.5, 0, 0, 0)
-		RightFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+		RightFrame.BackgroundColor3 = Color3.fromRGB(8, 8, 8)
 		RightFrame.BorderSizePixel = 0
 		RightFrame.Parent = LoaderContainer
 
