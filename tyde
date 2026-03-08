@@ -1,3 +1,6 @@
+-- This is the full library code to upload to GitHub (raw URL)
+-- Features: Tabs, Sections, Toggle, Slider, Button, Input, Keybind, Notify, Paragraph/Label
+
 local Library = {}
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -29,9 +32,7 @@ local function MakeDraggable(topbar, window)
             dragStart = input.Position
             startPos = window.Position
             input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
-                    dragging = false
-                end
+                if input.UserInputState == Enum.UserInputState.End then dragging = false end
             end)
         end
     end)
@@ -48,7 +49,7 @@ local function MakeDraggable(topbar, window)
     end)
 end
 
--- Notification system (added)
+-- Notification container (bottom-right)
 local Notifications = Instance.new("Frame")
 Notifications.Size = UDim2.new(0, 300, 1, 0)
 Notifications.Position = UDim2.new(1, -310, 1, -10)
@@ -494,9 +495,7 @@ function Library:Create(config)
                     end
                 end)
                 UserInputService.InputEnded:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                        sliding = false
-                    end
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then sliding = false end
                 end)
                 UserInputService.InputChanged:Connect(function(input)
                     if sliding and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
@@ -506,7 +505,7 @@ function Library:Create(config)
                 UpdateSectionSize()
             end
 
-            function Elements:Textbox(data)
+            function Elements:Input(data)
                 local InpFrame = Instance.new("Frame")
                 InpFrame.Size = UDim2.new(1, 0, 0, 35)
                 InpFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
@@ -542,7 +541,6 @@ function Library:Create(config)
                 UpdateSectionSize()
             end
 
-            -- Keybind (new)
             function Elements:Keybind(data)
                 local kbFrame = Instance.new("Frame")
                 kbFrame.Size = UDim2.new(1, 0, 0, 35)
@@ -600,72 +598,6 @@ function Library:Create(config)
         end
 
         return TabElements
-    end
-
-    local LoaderObj = nil
-    if UIConfig.Loader then
-        local LoaderGui = Instance.new("ScreenGui")
-        LoaderGui.Name = tostring(math.random(1000000, 9999999))
-        LoaderGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-        LoaderGui.Parent = GetContainer()
-
-        local LoaderContainer = Instance.new("Frame")
-        LoaderContainer.Size = UDim2.new(1, 0, 1, 0)
-        LoaderContainer.BackgroundTransparency = 1
-        LoaderContainer.Parent = LoaderGui
-
-        local LeftFrame = Instance.new("Frame")
-        LeftFrame.Size = UDim2.new(0.5, 0, 1, 0)
-        LeftFrame.Position = UDim2.new(0, 0, 0, 0)
-        LeftFrame.BackgroundColor3 = Color3.fromRGB(8, 8, 8)
-        LeftFrame.BorderSizePixel = 0
-        LeftFrame.Parent = LoaderContainer
-
-        local RightFrame = Instance.new("Frame")
-        RightFrame.Size = UDim2.new(0.5, 0, 1, 0)
-        RightFrame.Position = UDim2.new(0.5, 0, 0, 0)
-        RightFrame.BackgroundColor3 = Color3.fromRGB(8, 8, 8)
-        RightFrame.BorderSizePixel = 0
-        RightFrame.Parent = LoaderContainer
-
-        local CenterText = Instance.new("TextLabel")
-        CenterText.Size = UDim2.new(1, 0, 1, 0)
-        CenterText.BackgroundTransparency = 1
-        CenterText.Text = "Loading..."
-        CenterText.TextColor3 = Color3.fromRGB(255, 255, 255)
-        CenterText.Font = Enum.Font.GothamBold
-        CenterText.TextSize = 30
-        CenterText.ZIndex = 10
-        CenterText.Parent = LoaderContainer
-
-        LoaderObj = {}
-        local ended = false
-
-        function LoaderObj:Start()
-            MainFrame.Visible = false
-        end
-
-        function LoaderObj:SetText(txt)
-            if not ended then
-                CenterText.Text = txt
-            end
-        end
-
-        function LoaderObj:End()
-            if ended then return end
-            ended = true
-            local fade = Tween(CenterText, {TextTransparency = 1}, 0.3)
-            fade.Completed:Wait()
-            Tween(LeftFrame, {Position = UDim2.new(-0.5, 0, 0, 0)}, 0.6)
-            local slide = Tween(RightFrame, {Position = UDim2.new(1, 0, 0, 0)}, 0.6)
-            slide.Completed:Wait()
-            LoaderGui:Destroy()
-            MainFrame.Size = UDim2.new(0, 500, 0, 300)
-            MainFrame.Visible = true
-            Tween(MainFrame, {Size = UDim2.new(0, 600, 0, 400)}, 0.4)
-        end
-    else
-        MainFrame.Visible = true
     end
 
     return Window, LoaderObj
