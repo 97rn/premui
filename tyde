@@ -44,7 +44,7 @@ local function MakeDraggable(topbar, window)
     end)
 end
 
--- Notifications (bottom-right popups)
+-- Notifications (bottom-right)
 local Notifications = Instance.new("Frame")
 Notifications.Size = UDim2.new(0, 300, 1, 0)
 Notifications.Position = UDim2.new(1, -310, 1, -10)
@@ -493,64 +493,6 @@ function Library:Create(config)
                         updateSlider(input.Position)
                     end
                 end)
-                UpdateSectionSize()
-            end
-
-            function Elements:Dropdown(data)
-                local dropHeight = 35
-                local DropFrame = Instance.new("Frame")
-                DropFrame.Size = UDim2.new(1, 0, 0, dropHeight)
-                DropFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-                DropFrame.ClipsDescendants = true
-                DropFrame.Parent = SectionContainer
-                local DropCorner = Instance.new("UICorner")
-                DropCorner.CornerRadius = UDim.new(0, 6)
-                DropCorner.Parent = DropFrame
-                local DropBtn = Instance.new("TextButton")
-                DropBtn.Size = UDim2.new(1, 0, 0, 35)
-                DropBtn.BackgroundTransparency = 1
-                DropBtn.Text = ""
-                DropBtn.Parent = DropFrame
-                local DropTitle = Instance.new("TextLabel")
-                DropTitle.Size = UDim2.new(1, -20, 1, 0)
-                DropTitle.Position = UDim2.new(0, 12, 0, 0)
-                DropTitle.BackgroundTransparency = 1
-                DropTitle.Text = data.Name or "Dropdown" .. " : ..."
-                DropTitle.TextColor3 = Color3.fromRGB(220, 220, 220)
-                DropTitle.Font = Enum.Font.Gotham
-                DropTitle.TextSize = 13
-                DropTitle.TextXAlignment = Enum.TextXAlignment.Left
-                DropTitle.Parent = DropBtn
-                local OptionContainer = Instance.new("Frame")
-                OptionContainer.Size = UDim2.new(1, 0, 1, -35)
-                OptionContainer.Position = UDim2.new(0, 0, 0, 35)
-                OptionContainer.BackgroundTransparency = 1
-                OptionContainer.Parent = DropFrame
-                local OptionLayout = Instance.new("UIListLayout")
-                OptionLayout.SortOrder = Enum.SortOrder.LayoutOrder
-                OptionLayout.Parent = OptionContainer
-                local isOpen = false
-                DropBtn.MouseButton1Click:Connect(function()
-                    isOpen = not isOpen
-                    local targetHeight = isOpen and (35 + (#data.Options * 30)) or 35
-                    Tween(DropFrame, {Size = UDim2.new(1, 0, 0, targetHeight)}, 0.2).Completed:Connect(UpdateSectionSize)
-                end)
-                for _, opt in ipairs(data.Options or {}) do
-                    local OptBtn = Instance.new("TextButton")
-                    OptBtn.Size = UDim2.new(1, 0, 0, 30)
-                    OptBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-                    OptBtn.Text = opt
-                    OptBtn.TextColor3 = Color3.fromRGB(220, 220, 220)
-                    OptBtn.Font = Enum.Font.Gotham
-                    OptBtn.TextSize = 12
-                    OptBtn.Parent = OptionContainer
-                    OptBtn.MouseButton1Click:Connect(function()
-                        DropTitle.Text = (data.Name or "Dropdown") .. " : " .. opt
-                        isOpen = false
-                        Tween(DropFrame, {Size = UDim2.new(1, 0, 0, 35)}, 0.2).Completed:Connect(UpdateSectionSize)
-                        if data.Callback then data.Callback(opt) end
-                    end)
-                end
                 UpdateSectionSize()
             end
 
